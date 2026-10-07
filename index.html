@@ -6,12 +6,12 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Calcula tu Huella CO₂</title>
-<meta name="description" content="Calculadora gratuita de huella de carbono para empresas y hogares en el Perú. Alcances 1 y 2 con GHG Protocol, factores oficiales y tarjeta para compartir.">
+<meta name="description" content="Calculadora gratuita de huella de carbono para empresas y hogares en Perú, Ecuador y otros países. Alcances 1 y 2 con GHG Protocol, factores oficiales y tarjeta para compartir.">
 <meta name="author" content="Jackeline Charapaqui Reluz">
 <link rel="canonical" href="https://calculadora-huella.pages.dev/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="¿Cuánto CO₂ emite tu empresa al año? Calculadora gratuita">
-<meta property="og:description" content="Calculadora gratuita de huella de carbono para empresas y hogares en el Perú. Alcances 1 y 2 con GHG Protocol, factores oficiales y tarjeta para compartir.">
+<meta property="og:description" content="Calculadora gratuita de huella de carbono para empresas y hogares en Perú, Ecuador y otros países. Alcances 1 y 2 con GHG Protocol, factores oficiales y tarjeta para compartir.">
 <meta property="og:image" content="https://calculadora-huella.pages.dev/og-image.png">
 <meta property="og:url" content="https://calculadora-huella.pages.dev/">
 <meta name="twitter:card" content="summary_large_image">
@@ -27,6 +27,7 @@
     <span class="eyebrow">Por Ing. Jackeline Charapaqui Reluz</span>
     <h1 id="h1">¿Cuánto CO₂ emite tu empresa al año?</h1>
     <p class="lead" id="lead">Calcula en 2 minutos la huella de carbono de tu organización en alcances 1 y 2, con la metodología del GHG Protocol. Tus datos no salen de tu navegador.</p>
+    <div class="country"><label for="country">País</label><select id="country"><option value="pe">Perú</option><option value="ec">Ecuador</option><option value="otro">Otro país</option></select></div>
     <div class="modes" role="group" aria-label="Tipo de cálculo">
       <button type="button" id="mEmp" aria-pressed="true">Empresa</button>
       <button type="button" id="mHog" aria-pressed="false">Hogar</button>
@@ -56,7 +57,7 @@
           <legend>Alcance 2 · Electricidad</legend>
           <p class="scope-note">La electricidad que compras a la red. Suma los kWh de tus recibos de los últimos 12 meses.</p>
           <div class="row"><label for="kwh">Consumo eléctrico</label><div class="field"><input id="kwh" type="number" min="0" step="any" inputmode="decimal" value="85000"><span>kWh/año</span></div></div>
-          <div class="row"><label for="gridF">Factor de la red (SEIN)<small>MINAM, Huella de Carbono Perú 2024</small></label><div class="field"><input id="gridF" type="number" min="0" step="any" inputmode="decimal" value="0.151"><span>t CO₂/MWh</span></div></div>
+          <div class="row"><label for="gridF">Factor de la red eléctrica<small id="gridSrc">SEIN · MINAM, Huella de Carbono Perú 2024</small></label><div class="field"><input id="gridF" type="number" min="0" step="any" inputmode="decimal" value="0.151"><span>t CO₂/MWh</span></div></div>
         </fieldset>
         <fieldset>
           <legend>Tu organización</legend>
@@ -69,9 +70,10 @@
           <legend>Tu casa</legend>
           <p class="scope-note">Usa tus recibos de un mes típico.</p>
           <div class="row"><label for="hPeople">Personas en el hogar</label><div class="field"><input id="hPeople" type="number" min="1" step="1" inputmode="numeric" value="3"><span>personas</span></div></div>
+          <div class="row" id="hGridRow" hidden><label for="hGridF">Factor de la red eléctrica de tu país<small>Usa el valor oficial de tu país</small></label><div class="field"><input id="hGridF" type="number" min="0" step="any" inputmode="decimal" placeholder="0.000"><span>t CO₂/MWh</span></div></div>
           <div class="row"><label for="hKwh">Electricidad<small>Dato del recibo de luz</small></label><div class="field"><input id="hKwh" type="number" min="0" step="any" inputmode="decimal" value="180"><span>kWh/mes</span></div></div>
-          <div class="row"><label for="hGlp">Balones de gas de 10 kg</label><div class="field"><input id="hGlp" type="number" min="0" step="any" inputmode="decimal" value="1.5"><span>balones/mes</span></div></div>
-          <div class="row"><label for="hGn">Gas natural (Cálidda)</label><div class="field"><input id="hGn" type="number" min="0" step="any" inputmode="decimal" value="0"><span>m³/mes</span></div></div>
+          <div class="row"><label for="hGlp" id="glpLabel">Balones de gas de 10 kg</label><div class="field"><input id="hGlp" type="number" min="0" step="any" inputmode="decimal" value="1.5"><span>balones/mes</span></div></div>
+          <div class="row"><label for="hGn">Gas natural por red</label><div class="field"><input id="hGn" type="number" min="0" step="any" inputmode="decimal" value="0"><span>m³/mes</span></div></div>
         </fieldset>
         <fieldset>
           <legend>Cómo te mueves</legend>
@@ -80,7 +82,7 @@
         </fieldset>
         <fieldset>
           <legend>Vuelos en el año</legend>
-          <p class="scope-note">Viajes de ida y vuelta, por persona, en clase económica. Valores de la calculadora de emisiones de la OACI (ICEC).</p>
+          <p class="scope-note">Viajes de ida y vuelta, por persona, en clase económica. Valores de la calculadora de emisiones de la OACI (ICEC). Si sales desde otra ciudad, elige «Otro destino» e ingresa el valor de tu ruta.</p>
           <div id="flights" class="flist"></div>
           <button type="button" class="addf" id="addFlight">+ Agregar otro destino</button>
           <p class="fact"><strong>¿Sabías que?</strong> Los combustibles sostenibles de aviación (SAF) pueden reducir hasta en 80% las emisiones de CO₂ de ciclo de vida frente al combustible fósil. Se mezclan con el combustible convencional y se usan en los mismos aviones y aeropuertos, sin modificar motores. <span class="src">Fuente: <a href="https://www.iata.org/contentassets/d13875e9ed784f75bac90f000760e998/saf-what-is-saf.pdf" target="_blank" rel="noopener">IATA, What is SAF?</a></span></p>
@@ -195,7 +197,7 @@
   </section>
 
   <footer>
-    <span>Estimación referencial basada en el GHG Protocol y factores por defecto del IPCC. Factor de la red eléctrica: 0.151 t CO₂e/MWh, Huella de Carbono Perú (MINAM, 2024). Vuelos: ICAO Carbon Emissions Calculator (ICEC), metodología v13, clase económica, ida y vuelta: Lima–Cusco 134 kg, Lima–Santiago 349 kg, Lima–Madrid 920 kg de CO₂ por pasajero; solo CO₂, sin efectos no-CO₂. Promedio por habitante del Perú: 2.05 t CO₂ en 2024, incluye todas las actividades del país (industria, transporte, energía), no solo los hogares (<a href="https://ourworldindata.org/co2/country/peru" target="_blank" rel="noopener">Our World in Data</a>). Equivalencias de autos y árboles: <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references" target="_blank" rel="noopener">EPA, Greenhouse Gas Equivalencies Calculator</a> (4.29 t CO₂e por auto al año; 0.060 t CO₂ por plántula urbana en 10 años). No reemplaza un inventario verificado según ISO 14064-1. Herramienta independiente, sin afiliación al Ministerio del Ambiente.</span>
+    <span>Estimación referencial basada en el GHG Protocol y factores por defecto del IPCC. Factor de la red eléctrica: 0.151 t CO₂e/MWh, Huella de Carbono Perú (MINAM, 2024). Vuelos: ICAO Carbon Emissions Calculator (ICEC), metodología v13, clase económica, ida y vuelta: Lima–Cusco 134 kg, Lima–Santiago 349 kg, Lima–Madrid 920 kg de CO₂ por pasajero; solo CO₂, sin efectos no-CO₂. Ecuador: 0.1616 t CO₂e/MWh, S.N.I. continental, factor para inventarios (Ministerio de Ambiente y Energía, informe 2024); 2.54 t CO₂ por habitante en 2024 (<a href="https://ourworldindata.org/co2/country/ecuador" target="_blank" rel="noopener">Our World in Data</a>). Promedio por habitante del Perú: 2.05 t CO₂ en 2024, incluye todas las actividades del país (industria, transporte, energía), no solo los hogares (<a href="https://ourworldindata.org/co2/country/peru" target="_blank" rel="noopener">Our World in Data</a>). Equivalencias de autos y árboles: <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references" target="_blank" rel="noopener">EPA, Greenhouse Gas Equivalencies Calculator</a> (4.29 t CO₂e por auto al año; 0.060 t CO₂ por plántula urbana en 10 años). No reemplaza un inventario verificado según ISO 14064-1. Herramienta independiente, sin afiliación al Ministerio del Ambiente.</span>
     <span>Creada por Ing. Jackeline Charapaqui Reluz · <a href="https://www.linkedin.com/in/jackeline-charapaqui-reluz" target="_blank" rel="noopener">LinkedIn</a> · <span class="mono" id="footMail"></span></span>
   </footer>
 </div>

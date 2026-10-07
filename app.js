@@ -1,6 +1,15 @@
 "use strict";
 (function(){
   var $ = function(id){return document.getElementById(id)};
+  var COUNTRIES = {
+    pe:{name:"Perú", de:"del Perú", grid:0.151, src:"SEIN · MINAM, Huella de Carbono Perú 2024", pc:2.05, balon:10, tag:" #Perú"},
+    ec:{name:"Ecuador", de:"de Ecuador", grid:0.1616, src:"S.N.I. continental · Ministerio de Ambiente y Energía 2024", pc:2.54, balon:15, tag:" #Ecuador"},
+    otro:{name:"", grid:null, src:"Ingresa el factor oficial de tu país", pc:null, balon:10, tag:""}
+  };
+  var tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch(e){}
+  var C = tz === "America/Guayaquil" ? "ec" : "pe";
+  function cty(){ return COUNTRIES[C]; }
+  function gridH(){ return C === "otro" ? val("hGridF") : cty().grid; }
   var MAIL = ["jacky.unfv","gmail.com"].join("@"), LI = "https://www.linkedin.com/in/jackeline-charapaqui-reluz", CALC = location.origin + location.pathname;
   var PERU = 2.05, CAR = 4.29, TREE = 0.060, CUSCO = 0.134, BALON = 0.0298;
   // Destinos desde Lima: distancia aproximada en km (solo ida). Los marcados ICAO usan el valor oficial de ida y vuelta.
@@ -106,8 +115,8 @@
       var ppl = Math.max(val("hPeople"), 1);
       var ft = flightTotals(), flights = ft.t;
       parts = [
-        ["electricidad", val("hKwh")*12/1000*0.151, "c2"],
-        ["GLP", val("hGlp")*12*10*2.98/1000, "c1"],
+        ["electricidad", val("hKwh")*12/1000*gridH(), "c2"],
+        ["GLP", val("hGlp")*12*cty().balon*2.98/1000, "c1"],
         ["gas natural", val("hGn")*12*1.93/1000, "c1"],
         ["auto", val("hGas")*12*8.74/1000, "c1"],
         ["taxi y apps", val("hTaxi")*52*0.17/1000, "c1"],
@@ -140,8 +149,8 @@
       $("tip").textContent = "Ingresa tus consumos para ver tu resultado.";
     }
     var EQ = mode === "emp"
-      ? [[fmt0(total/CAR), "autos a gasolina circulando un año (EPA)"], [fmt0(total/TREE), "plántulas de árbol creciendo 10 años para absorberlo (EPA)"], [fmt(total/PERU), "habitantes del Perú en un año"]]
-      : [[fmt0(total/CUSCO), "vuelos Lima–Cusco ida y vuelta (OACI)"], [fmt0(total/BALON), "balones de gas de 10 kg"], [fmt0(total/TREE), "plántulas de árbol creciendo 10 años para absorberlo (EPA)"]];
+      ? [[fmt0(total/CAR), "autos a gasolina circulando un año (EPA)"], [fmt0(total/TREE), "plántulas de árbol creciendo 10 años para absorberlo (EPA)"], (cty().pc ? [fmt(total/cty().pc), "habitantes "+cty().de+" en un año"] : [fmt0(total/CUSCO), "vuelos de 584 km ida y vuelta (OACI)"])]
+      : [[fmt0(total/CUSCO), "vuelos Lima–Cusco ida y vuelta (OACI)"], [fmt0(total/(cty().balon*0.00298)), "balones de gas de "+cty().balon+" kg"], [fmt0(total/TREE), "plántulas de árbol creciendo 10 años para absorberlo (EPA)"]];
     EQ.forEach(function(e,i){ $("eq"+(i+1)).textContent = e[0]; $("eq"+(i+1)+"k").textContent = e[1]; });
     $("cardTag").textContent = cardTag;
     $("cardNum").textContent = fmt(total);
@@ -149,7 +158,7 @@
     if (mode === "hog" && total > 0){
       var per2 = total/Math.max(val("hPeople"),1);
       var ppl2 = Math.max(val("hPeople"),1);
-      line = "Somos "+ppl2+(ppl2 === 1 ? " persona" : " personas")+": "+fmt(per2)+" t por persona al año. Referencia: un peruano emite en promedio 2.05 t de CO₂ al año, sumando todas las actividades del país. Mi mayor fuente: "+top[0]+".";
+      line = "Somos "+ppl2+(ppl2 === 1 ? " persona" : " personas")+": "+fmt(per2)+" t por persona al año. "+(cty().pc ? "Referencia: un habitante "+cty().de+" emite en promedio "+cty().pc+" t de CO₂ al año, sumando todas las actividades del país. " : "")+"Mi mayor fuente: "+top[0]+".";
     }
     $("cardLine").textContent = line;
     var pledge = mode === "hog" ? $("pledge").value.trim() : "";
@@ -198,16 +207,28 @@
     $("h1").textContent = emp ? "¿Cuánto CO₂ emite tu empresa al año?" : "¿Cuánto CO₂ emite tu hogar al año?";
     $("lead").textContent = emp
       ? "Calcula en 2 minutos la huella de carbono de tu organización en alcances 1 y 2, con la metodología del GHG Protocol. Tus datos no salen de tu navegador."
-      : "Luz, gas, transporte y vuelos: calcula en 1 minuto la huella de tu casa y compárala con el promedio por habitante del Perú. Tus datos no salen de tu navegador.";
+      : "Luz, gas, transporte y vuelos: calcula en 1 minuto la huella de tu casa y compárala con el promedio por habitante de tu país. Tus datos no salen de tu navegador.";
     $("sampleText").textContent = emp
       ? "Valores de ejemplo: una empresa de servicios con 40 trabajadores. Reemplázalos con tus consumos anuales."
-      : "Valores de ejemplo: un hogar de 3 personas en Lima. Reemplázalos con tus datos.";
+      : "Valores de ejemplo: un hogar de 3 personas. Reemplázalos con tus datos.";
     $("sampleBar").hidden = false;
     calc();
   }
 
   document.querySelectorAll("#calc input").forEach(function(el){ el.addEventListener("input", function(){ $("sampleBar").hidden = true; calc(); }) });
   $("refType").addEventListener("change", calc);
+  function setCountry(c){
+    C = c; var k = cty();
+    $("country").value = c;
+    $("gridSrc").textContent = k.src;
+    $("gridF").value = k.grid === null ? "" : String(k.grid);
+    $("gridF").placeholder = "0.000";
+    $("hGridRow").hidden = c !== "otro";
+    $("glpLabel").textContent = "Balones de gas de "+k.balon+" kg";
+    calc();
+  }
+  $("country").addEventListener("change", function(){ setCountry($("country").value); });
+  $("hGridF").addEventListener("input", calc);
   document.querySelectorAll("[data-act]").forEach(function(el){ el.addEventListener("change", calc) });
   $("pledge").addEventListener("input", function(){ $("pledgeCount").textContent = $("pledge").value.length+"/140"; calc(); });
   $("mEmp").addEventListener("click", function(){ setMode("emp") });
@@ -225,7 +246,7 @@
     var extra = "";
     if (last.badges && last.badges.length) extra += "\n\n"+last.badges.join("\n");
     if (last.pledge) extra += "\n\nMi compromiso: "+last.pledge;
-    var text = "Calculé la huella de carbono "+who+": "+fmt(last.total)+" t CO2e al año. "+last.line+extra+"\n\nLo hice en 2 minutos con la calculadora gratuita de @Jackeline Charapaqui Reluz.\n\n👉 Calcula la tuya aquí: "+CALC+"\n🔗 Perfil de Jackeline: "+LI+"\n\n#HuellaDeCarbono #Sostenibilidad #CambioClimático #Perú";
+    var text = "Calculé la huella de carbono "+who+": "+fmt(last.total)+" t CO2e al año. "+last.line+extra+"\n\nLo hice en 2 minutos con la calculadora gratuita de @Jackeline Charapaqui Reluz.\n\n👉 Calcula la tuya aquí: "+CALC+"\n🔗 Perfil de Jackeline: "+LI+"\n\n#HuellaDeCarbono #Sostenibilidad #CambioClimático"+cty().tag;
     var done = function(){ $("toast").textContent = "Copiado. Al pegarlo en LinkedIn, borra la @ y vuelve a escribir @Jackeline para elegir su perfil y etiquetarla." };
     var fail = function(){ $("toast").textContent = text };
     try { navigator.clipboard.writeText(text).then(done, fail) } catch(e){ fail() }
@@ -245,5 +266,5 @@
   document.querySelectorAll(".waTier").forEach(function(a){ a.addEventListener("click", function(){ tier = a.dataset.tier; setMail(); }) });
   $("addFlight").addEventListener("click", function(){ addFlight(0, 1); });
   addFlight(0, 2);
-  calc();
+  setCountry(C);
 })();
