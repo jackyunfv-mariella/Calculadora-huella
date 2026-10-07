@@ -126,6 +126,7 @@ textarea:focus{outline:2px solid var(--copper);outline-offset:1px}
 .btn.small{padding:6px 12px;font-size:13px}
 .msgfield textarea{border:0;min-height:96px;font-size:14px}
 .contact-actions{display:flex;flex-wrap:wrap;gap:8px}
+.sector-note{background:var(--copper-soft);border-left:3px solid var(--copper);border-radius:6px;padding:10px 12px;font-size:13px;margin-bottom:18px}
 footer{margin-top:32px;color:var(--muted);font-size:12px;max-width:80ch;display:flex;flex-direction:column;gap:6px}
 footer a{color:var(--copper)}
 @media (prefers-reduced-motion: reduce){.bar-fill{transition:none}}
